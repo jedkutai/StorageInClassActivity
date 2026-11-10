@@ -14,6 +14,7 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
+import java.io.File
 
 // TODO (1: Fix any bugs)
 // TODO (2: Add function saveComic(...) to save comic info when downloaded
@@ -27,6 +28,10 @@ class MainActivity : AppCompatActivity() {
     lateinit var numberEditText: EditText
     lateinit var showButton: Button
     lateinit var comicImageView: ImageView
+
+    private val internalFileName = "my_file"
+
+    private lateinit var file: File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +49,13 @@ class MainActivity : AppCompatActivity() {
             downloadComic(numberEditText.text.toString())
         }
 
+        file = File(filesDir, internalFileName)
+
+        if (file.exists()) {
+            val savedComic = JSONObject(file.readText())
+            showComic(savedComic)
+        }
+
     }
 
     // Fetches comic from web as JSONObject
@@ -51,7 +63,10 @@ class MainActivity : AppCompatActivity() {
         val url = "https://xkcd.com/$comicId/info.0.json"
         requestQueue.add (
             JsonObjectRequest(url
-                , {showComic(it)}
+                , {
+                    showComic(it)
+                    saveComic(it)
+                }
                 , {}
             )
         )
@@ -66,7 +81,8 @@ class MainActivity : AppCompatActivity() {
 
     // Implement this function
     private fun saveComic(comicObject: JSONObject) {
-
+        file = File(filesDir, internalFileName)
+        file.writeText(comicObject.toString())
     }
 
 
